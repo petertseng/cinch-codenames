@@ -56,7 +56,7 @@ module Cinch; module Plugins; class Codenames < GameBot
   def do_start_game(m, game, options)
     success, error = game.start_game
     unless success
-      m.reply("Failed to start game because #{::Codenames::Text.for_error(error)}", true)
+      m.reply("Failed to start game because #{error}", true)
       return
     end
 
@@ -117,7 +117,7 @@ module Cinch; module Plugins; class Codenames < GameBot
         "#{format_team(team.id)}'s #{role_name}#{hinters.size == 1 ? ' is' : 's are'} #{hinters.join(', ')}"
       }.join(' and '))
     else
-      m.reply("Failed to choose #{role_name} because #{::Codenames::Text.for_error(error)}", true)
+      m.reply("Failed to choose #{role_name} because #{error}", true)
     end
 
     # If all hinters have been chosen, move the game along.
@@ -132,7 +132,7 @@ module Cinch; module Plugins; class Codenames < GameBot
     if success
       Channel(game.channel_name).send(decision_info(game))
     else
-      m.reply("Failed to give clue because #{::Codenames::Text.for_error(error)}", true)
+      m.reply("Failed to give clue because #{error}", true)
     end
   end
 
@@ -183,7 +183,7 @@ module Cinch; module Plugins; class Codenames < GameBot
         chan.send(decision_info(game))
       end
     else
-      m.reply("Failed to guess because #{::Codenames::Text.for_error(error)}", true)
+      m.reply("Failed to guess because #{error}", true)
     end
   end
 
@@ -197,7 +197,7 @@ module Cinch; module Plugins; class Codenames < GameBot
       chan.send(self.public_word_info(game).join("\n"))
       chan.send(decision_info(game))
     else
-      m.reply("Failed to pass on guessing because #{::Codenames::Text.for_error(error)}", true)
+      m.reply("Failed to pass on guessing because #{error}", true)
     end
   end
 
@@ -230,7 +230,7 @@ module Cinch; module Plugins; class Codenames < GameBot
         team_name = team ? 'AB'[team] : 'Random'
         m.reply("You joined team #{team_name}.", true)
       else
-        m.reply("Failed to change team because #{::Codenames::Text.for_error(error)}", true)
+        m.reply("Failed to change team because #{error}", true)
       end
     else
       # Not started and no arg: show teams.
