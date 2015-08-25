@@ -141,8 +141,8 @@ module Cinch; module Plugins; class Codenames < GameBot
     return unless game && game.started?
 
     # Save these because they could change after guess is done.
-    team_name = format_team(game.current_team)
-    other_team = game.other_team
+    team_name = format_team(game.current_team_id)
+    other_team = game.teams[game.other_team_id]
 
     success, error = game.guess(m.user, guessed)
 
@@ -161,7 +161,7 @@ module Cinch; module Plugins; class Codenames < GameBot
         chan.send("#{prefix} the #{NEUTRAL}. #{team_name}'s turn is over.")
         hinter_info = self.hinter_word_info(game)
         chan.send(self.public_word_info(game).join("\n"))
-        game.teams[other_team].hinters.each { |hinter| hinter.send(hinter_info) }
+        other_team.hinters.each { |hinter| hinter.send(hinter_info) }
         chan.send(decision_info(game))
       when Integer
         if guess_info.winner
@@ -174,7 +174,7 @@ module Cinch; module Plugins; class Codenames < GameBot
           chan.send("#{prefix} the #{format_team(guess_info.role)} agent. #{what_next}")
           if guess_info.turn_ends
             chan.send(self.public_word_info(game).join("\n"))
-            game.teams[other_team].hinters.each { |hinter| hinter.send(hinter_info) }
+            other_team.hinters.each { |hinter| hinter.send(hinter_info) }
           end
           chan.send(decision_info(game))
         end
@@ -313,7 +313,7 @@ module Cinch; module Plugins; class Codenames < GameBot
       "#{teams_and_players} #{teams_left.size == 1 ? 'is' : 'are'} choosing a #{::Codenames::Text::ROLES[:hint]}"
     when :hint, :guess
       role = game.current_phase
-      team = game.teams[game.current_team]
+      team = game.current_team
       players = team.with_role(role)
       intro = "#{format_team(team.id)} #{::Codenames::Text::ROLES[role]}#{'s' if players.size != 1} (#{players.map(&:nick).join(', ')})"
       instructions = if role == :hint
