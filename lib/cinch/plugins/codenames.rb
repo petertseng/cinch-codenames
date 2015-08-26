@@ -188,8 +188,9 @@ module Cinch; module Plugins; class Codenames < GameBot
 
     success, error = game.no_guess(m.user)
     if success
-      chan = Channel(game.channel_name)
-      chan.send(decision_info(game))
+      # At this point current_team is no longer the passing team.
+      # It's the team who needs to give a hint, so current_team is correct.
+      self.prompt_hinters(game, game.current_team.hinters)
     else
       m.reply("Failed to pass on guessing because #{error}", true)
     end
