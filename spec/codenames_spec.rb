@@ -46,16 +46,12 @@ RSpec.describe Cinch::Plugins::Codenames do
   let(:player3) { 'test3' }
   let(:player4) { 'test4' }
   let(:npmod) { 'npmod' }
-  let(:user1) { MessageReceiver.new(player1) }
-  let(:user2) { MessageReceiver.new(player2) }
-  let(:user3) { MessageReceiver.new(player3) }
-  let(:user4) { MessageReceiver.new(player4) }
-  let(:players) { {
-    player1 => user1,
-    player2 => user2,
-    player3 => user3,
-    player4 => user4,
-  }}
+  let(:players) { [
+    player1,
+    player2,
+    player3,
+    player4,
+  ]}
 
   let(:opts) {{
     :channels => [channel1],
@@ -136,7 +132,7 @@ RSpec.describe Cinch::Plugins::Codenames do
 
   context 'in a game' do
     before :each do
-      players.keys.each { |player| join(msg('!join', nick: player)) }
+      players.each { |player| join(msg('!join', nick: player)) }
       allow(plugin).to receive(:Channel).with(channel1).and_return(chan)
       get_replies(msg('!start'))
     end
@@ -318,7 +314,7 @@ RSpec.describe Cinch::Plugins::Codenames do
 
       it 'allows all players to join a second game' do
         get_replies(msg("!guess #{assassin_word}", nick: guessers[0]))
-        players.keys.each { |player|
+        players.each { |player|
           expect(join(msg('!join', nick: player))).to be_any { |x|
             x.text.include?('has joined the game')
           }
