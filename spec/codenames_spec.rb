@@ -192,7 +192,7 @@ RSpec.describe Cinch::Plugins::Codenames do
 
       it 'shows hinter info to hinters' do
         # TODO better check?
-        expect(get_replies(msg('!words', nick: hinters[0])).size).to be == 2
+        expect(get_replies(msg('!words', nick: hinters[0])).size).to be == 1
       end
 
       it 'shows teams' do

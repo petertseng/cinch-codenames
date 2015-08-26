@@ -250,10 +250,11 @@ module Cinch; module Plugins; class Codenames < GameBot
     # We don't show words until everyone has chosen roles.
     return unless game.teams.all?(&:picked_roles?)
 
-    m.reply(self.public_word_info(game).join("\n"))
-
-    # If is hinter, show hinter info too.
-    m.user.send(self.hinter_word_info(game)) if game.role_of(m.user) == :hint
+    if game.role_of(m.user) == :hint
+      m.user.send(self.hinter_word_info(game))
+    else
+      m.reply(self.public_word_info(game).join("\n"))
+    end
   end
 
   def status(m)
