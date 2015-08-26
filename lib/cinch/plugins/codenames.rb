@@ -331,7 +331,9 @@ module Cinch; module Plugins; class Codenames < GameBot
         can_stop = game.guessed_this_turn? ? ' or !stop guessing' : ''
         guesses = game.guesses_remaining
         guesses = 'unlimited' if guesses == Float::INFINITY
-        "Please make a !guess for the clue \"#{game.current_hint}\"#{can_stop}. You have #{guesses} guess#{'es' if guesses != 1} remaining."
+        num = game.current_hint_number
+        num = 'unlimited' if num == Float::INFINITY
+        "Please make a !guess for the clue \"#{game.current_hint_word} #{game.current_hint_number}\"#{can_stop}. You have #{guesses} guess#{'es' if guesses != 1} remaining."
       end
       "#{intro}: #{instructions}"
     end
