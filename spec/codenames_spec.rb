@@ -163,8 +163,11 @@ RSpec.describe Cinch::Plugins::Codenames do
     it 'allows players to volunteer as hinter' do
       role_name = ::Codenames::Text::ROLES[:hint]
       expect(get_replies_text(msg('!me', nick: hinters[0]))).to be_all { |x| x.include?("#{role_name} is") }
+
       chan.messages.clear
+
       expect(get_replies_text(msg('!me', nick: hinters[1]))).to be_all { |x| x.include?("#{role_name} is") }
+
       expect(chan.messages).to be_any { |x| x.include?('Codenames for game') }
       expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
     end
@@ -172,8 +175,11 @@ RSpec.describe Cinch::Plugins::Codenames do
     it 'allows random hinters' do
       role_name = ::Codenames::Text::ROLES[:hint]
       expect(get_replies_text(msg('!random', nick: hinters[0]))).to be_all { |x| x.include?("#{role_name} is") }
+
       chan.messages.clear
+
       expect(get_replies_text(msg('!random', nick: hinters[1]))).to be_all { |x| x.include?("#{role_name} is") }
+
       expect(chan.messages).to be_any { |x| x.include?('Codenames for game') }
       expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
     end
@@ -273,7 +279,9 @@ RSpec.describe Cinch::Plugins::Codenames do
 
       it 'ends turn when out of guesses' do
         get_replies(msg("!guess #{team0_word}", nick: guessers[0]))
+
         chan.messages.clear
+
         get_replies(msg("!guess #{team0_word2}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
@@ -290,7 +298,9 @@ RSpec.describe Cinch::Plugins::Codenames do
 
       it 'allows a skip after a correct guess' do
         get_replies(msg("!guess #{team0_word}", nick: guessers[0]))
+
         chan.messages.clear
+
         get_replies(msg('!stop', nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
       end
