@@ -154,9 +154,7 @@ module Cinch; module Plugins; class Codenames < GameBot
       case guess_info.role
       when :assassin
         chan.send("#{prefix} the #{ASSASSIN}! #{team_name} loses!")
-        chan.send("Congratulations!!! #{game.winning_players.map(&:nick).join(', ')} are the winners!") if game.winning_players
-        chan.send(self.endgame_word_info(game))
-        self.start_new_game(game)
+        self.congratulate_winners(game)
       when :neutral
         chan.send("#{prefix} the #{NEUTRAL}. #{team_name}'s turn is over.")
         hinter_info = self.hinter_word_info(game)
@@ -166,9 +164,7 @@ module Cinch; module Plugins; class Codenames < GameBot
       when Integer
         if guess_info.winner
           chan.send("#{prefix} the #{format_team(guess_info.role)} agent! #{format_team(guess_info.winner)} has found all their agents!")
-          chan.send("Congratulations!!! #{game.winning_players.map(&:nick).join(', ')} are the winners!") if game.winning_players
-          chan.send(self.endgame_word_info(game))
-          self.start_new_game(game)
+          self.congratulate_winners(game)
         else
           what_next = guess_info.turn_ends ? "#{team_name}'s turn is over." : "#{team_name} can continue guessing."
           chan.send("#{prefix} the #{format_team(guess_info.role)} agent. #{what_next}")
@@ -300,6 +296,13 @@ module Cinch; module Plugins; class Codenames < GameBot
     chan = Channel(game.channel_name)
     chan.send("Codenames for game #{game.id}: #{game.public_words[:unguessed].map(&:capitalize).join(', ')}")
     chan.send(decision_info(game))
+  end
+
+  def congratulate_winners(game)
+    chan = Channel(game.channel_name)
+    chan.send("Congratulations!!! #{game.winning_players.map(&:nick).join(', ')} are the winners!") if game.winning_players
+    chan.send(self.endgame_word_info(game))
+    self.start_new_game(game)
   end
 
   def decision_info(game)
