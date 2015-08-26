@@ -159,9 +159,7 @@ module Cinch; module Plugins; class Codenames < GameBot
         self.congratulate_winners(game)
       when :neutral
         chan.send("#{prefix} the #{NEUTRAL}. #{team_name}'s turn is over.")
-        hinter_info = self.hinter_word_info(game)
-        other_team.hinters.each { |hinter| hinter.send(hinter_info) }
-        chan.send(decision_info(game))
+        self.prompt_hinters(game, other_team.hinters)
       when Integer
         if guess_info.winner
           chan.send("#{prefix} the #{format_team(guess_info.role)} agent! #{format_team(guess_info.winner)} has found all their agents!")
@@ -170,9 +168,10 @@ module Cinch; module Plugins; class Codenames < GameBot
           what_next = guess_info.turn_ends ? "#{team_name}'s turn is over." : "#{team_name} can continue guessing."
           chan.send("#{prefix} the #{format_team(guess_info.role)} agent. #{what_next}")
           if guess_info.turn_ends
-            other_team.hinters.each { |hinter| hinter.send(hinter_info) }
+            self.prompt_hinters(game, other_team.hinters)
+          else
+            chan.send(decision_info(game))
           end
-          chan.send(decision_info(game))
         end
       else
         chan.send("Unknown word type #{guess_info.role}, unclear how to proceed.")
@@ -295,6 +294,12 @@ module Cinch; module Plugins; class Codenames < GameBot
     chan = Channel(game.channel_name)
     chan.send("Codenames for game #{game.id}: #{game.public_words[:unguessed].map(&:capitalize).join(', ')}")
     chan.send(decision_info(game))
+  end
+
+  def prompt_hinters(game, hinters)
+    hinter_info = self.hinter_word_info(game)
+    hinters.each { |hinter| hinter.send(hinter_info) }
+    Channel(game.channel_name).send(decision_info(game))
   end
 
   def congratulate_winners(game)
