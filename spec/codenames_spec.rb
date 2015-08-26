@@ -306,7 +306,7 @@ RSpec.describe Cinch::Plugins::Codenames do
 
       # This is pretty bad.
       let(:words) { get_replies_text(msg('!words', nick: hinters[0])).find { |x| x.include?('Assassin') } }
-      let(:team0_words) { %r{\(9\): ([^.]+)\.}.match(words)[1].split(', ') }
+      let(:team0_words) { %r{\(9\): ([\w, ]+)$}.match(words)[1].split(', ') }
 
       it 'ends the game when all words are guessed' do
         team0_words.drop(1).each { |word| get_replies(msg("!guess #{word}", nick: guessers[0])) }

@@ -369,10 +369,9 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def hinter_word_info(game)
     words = game.hinter_words
-    str = "Game #{game.id} turn #{game.turn_number}: "
-    str << classify_words(words, show_max: false).join('. ')
-    str << '.'
-    str
+    lines = ["Game #{game.id} turn #{game.turn_number} status:"]
+    lines.concat(classify_words(words, show_max: false))
+    lines.join("\n")
   end
 
   def endgame_word_info(game)
