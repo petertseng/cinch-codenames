@@ -130,7 +130,9 @@ module Cinch; module Plugins; class Codenames < GameBot
 
     success, error = game.hint(m.user, word, num)
     if success
-      Channel(game.channel_name).send(decision_info(game))
+      chan = Channel(game.channel_name)
+      chan.send(self.public_word_info(game).join("\n"))
+      chan.send(decision_info(game))
     else
       m.reply("Failed to give clue because #{error}", true)
     end

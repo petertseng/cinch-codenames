@@ -208,16 +208,19 @@ RSpec.describe Cinch::Plugins::Codenames do
 
       it 'prompts for guesses in response to a clue' do
         get_replies(msg('!clue hi 2', nick: hinters[0]))
+        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please make a !guess') }
       end
 
       it 'prompts for guesses in response to an unlimited clue' do
         get_replies(msg('!clue hi unlimited', nick: hinters[0]))
+        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please make a !guess') }
       end
 
       it 'prompts for guesses in response to a zero clue' do
         get_replies(msg('!clue hi 0', nick: hinters[0]))
+        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please make a !guess') }
       end
     end
