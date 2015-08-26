@@ -160,7 +160,6 @@ module Cinch; module Plugins; class Codenames < GameBot
       when :neutral
         chan.send("#{prefix} the #{NEUTRAL}. #{team_name}'s turn is over.")
         hinter_info = self.hinter_word_info(game)
-        chan.send(self.public_word_info(game).join("\n"))
         other_team.hinters.each { |hinter| hinter.send(hinter_info) }
         chan.send(decision_info(game))
       when Integer
@@ -171,7 +170,6 @@ module Cinch; module Plugins; class Codenames < GameBot
           what_next = guess_info.turn_ends ? "#{team_name}'s turn is over." : "#{team_name} can continue guessing."
           chan.send("#{prefix} the #{format_team(guess_info.role)} agent. #{what_next}")
           if guess_info.turn_ends
-            chan.send(self.public_word_info(game).join("\n"))
             other_team.hinters.each { |hinter| hinter.send(hinter_info) }
           end
           chan.send(decision_info(game))
@@ -192,7 +190,6 @@ module Cinch; module Plugins; class Codenames < GameBot
     success, error = game.no_guess(m.user)
     if success
       chan = Channel(game.channel_name)
-      chan.send(self.public_word_info(game).join("\n"))
       chan.send(decision_info(game))
     else
       m.reply("Failed to pass on guessing because #{error}", true)

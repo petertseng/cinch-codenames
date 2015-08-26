@@ -256,14 +256,12 @@ RSpec.describe Cinch::Plugins::Codenames do
       it 'ends turn on guessing neutral' do
         get_replies(msg("!guess #{neutral_word}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
-        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
       end
 
       it 'ends turn on guessing other team' do
         get_replies(msg("!guess #{team1_word}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
-        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
       end
 
@@ -278,7 +276,6 @@ RSpec.describe Cinch::Plugins::Codenames do
         chan.messages.clear
         get_replies(msg("!guess #{team0_word2}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
-        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
       end
 
@@ -295,7 +292,6 @@ RSpec.describe Cinch::Plugins::Codenames do
         get_replies(msg("!guess #{team0_word}", nick: guessers[0]))
         chan.messages.clear
         get_replies(msg('!stop', nick: guessers[0]))
-        expect(chan.messages).to be_any { |x| x.include?('status') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
       end
     end
