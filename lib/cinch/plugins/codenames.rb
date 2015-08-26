@@ -131,7 +131,7 @@ module Cinch; module Plugins; class Codenames < GameBot
     success, error = game.hint(m.user, word, num)
     if success
       chan = Channel(game.channel_name)
-      chan.send(self.public_word_info(game).join("\n"))
+      chan.send(self.public_word_info(game))
       chan.send(decision_info(game))
     else
       m.reply("Failed to give clue because #{error}", true)
@@ -253,7 +253,7 @@ module Cinch; module Plugins; class Codenames < GameBot
     if game.role_of(m.user) == :hint
       m.user.send(self.hinter_word_info(game))
     else
-      m.reply(self.public_word_info(game).join("\n"))
+      m.reply(self.public_word_info(game))
     end
   end
 
@@ -365,6 +365,7 @@ module Cinch; module Plugins; class Codenames < GameBot
     lines = ["Game #{game.id} turn #{game.turn_number} status:"]
     lines.concat(classify_words(words[:guessed]))
     lines << "Unidentified (#{words[:unguessed].size}): #{words[:unguessed].map(&:capitalize).join(', ')}"
+    lines.join("\n")
   end
 
   def hinter_word_info(game)
