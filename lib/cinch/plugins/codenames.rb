@@ -377,10 +377,9 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def endgame_word_info(game)
     words = game.hinter_words(exclude_revealed: false)
-    str = "Game #{game.id} words: "
-    str << classify_words(words, show_max: false).join('. ')
-    str << '.'
-    str
+    lines = ["Game #{game.id} words:"]
+    lines.concat(classify_words(words, show_max: false))
+    lines.join("\n")
   end
 
   def format_team(id)
