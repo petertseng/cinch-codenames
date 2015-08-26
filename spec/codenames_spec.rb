@@ -90,6 +90,16 @@ RSpec.describe Cinch::Plugins::Codenames do
     get_replies(message)
   end
 
+  # This is very bad, but cinch-test doesn't natively allow catching arbitrary player messages.
+  def catch_player_messages(player, messages, strict: true)
+    user = plugin.instance_variable_get('@games')[channel1].send(:find_player, player).user
+    if strict
+      expect(user).to receive(:send) { |x| messages << x }
+    else
+      allow(user).to receive(:send) { |x| messages << x }
+    end
+  end
+
   it 'makes a test bot' do
     expect(bot).to be_a(Cinch::Bot)
   end
@@ -165,11 +175,14 @@ RSpec.describe Cinch::Plugins::Codenames do
       expect(get_replies_text(msg('!me', nick: hinters[0]))).to be_all { |x| x.include?("#{role_name} is") }
 
       chan.messages.clear
+      hinter_messages = []
+      catch_player_messages(hinters[0], hinter_messages)
 
       expect(get_replies_text(msg('!me', nick: hinters[1]))).to be_all { |x| x.include?("#{role_name} is") }
 
       expect(chan.messages).to be_any { |x| x.include?('Codenames for game') }
       expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
+      expect(hinter_messages).to be_any { |x| x.include?('status') }
     end
 
     it 'allows random hinters' do
@@ -177,11 +190,16 @@ RSpec.describe Cinch::Plugins::Codenames do
       expect(get_replies_text(msg('!random', nick: hinters[0]))).to be_all { |x| x.include?("#{role_name} is") }
 
       chan.messages.clear
+      hinter_messages = []
+      # Since it's random, the "guesser" might be the hinter...
+      catch_player_messages(hinters[0], hinter_messages, strict: false)
+      catch_player_messages(guessers[0], hinter_messages, strict: false)
 
       expect(get_replies_text(msg('!random', nick: hinters[1]))).to be_all { |x| x.include?("#{role_name} is") }
 
       expect(chan.messages).to be_any { |x| x.include?('Codenames for game') }
       expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
+      expect(hinter_messages).to be_any { |x| x.include?('status') }
     end
 
     context 'when roles are decided' do
@@ -260,15 +278,23 @@ RSpec.describe Cinch::Plugins::Codenames do
       end
 
       it 'ends turn on guessing neutral' do
+        hinter_messages = []
+        catch_player_messages(hinters[1], hinter_messages)
+
         get_replies(msg("!guess #{neutral_word}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
+        expect(hinter_messages).to be_any { |x| x.include?('status') }
       end
 
       it 'ends turn on guessing other team' do
+        hinter_messages = []
+        catch_player_messages(hinters[1], hinter_messages)
+
         get_replies(msg("!guess #{team1_word}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
+        expect(hinter_messages).to be_any { |x| x.include?('status') }
       end
 
       it 'continues turn on guessing own team' do
@@ -281,10 +307,13 @@ RSpec.describe Cinch::Plugins::Codenames do
         get_replies(msg("!guess #{team0_word}", nick: guessers[0]))
 
         chan.messages.clear
+        hinter_messages = []
+        catch_player_messages(hinters[1], hinter_messages)
 
         get_replies(msg("!guess #{team0_word2}", nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('turn is over') }
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
+        expect(hinter_messages).to be_any { |x| x.include?('status') }
       end
 
       it 'allows all players to join a second game' do
@@ -300,9 +329,12 @@ RSpec.describe Cinch::Plugins::Codenames do
         get_replies(msg("!guess #{team0_word}", nick: guessers[0]))
 
         chan.messages.clear
+        hinter_messages = []
+        catch_player_messages(hinters[1], hinter_messages)
 
         get_replies(msg('!stop', nick: guessers[0]))
         expect(chan.messages).to be_any { |x| x.include?('Please present a !clue') }
+        expect(hinter_messages).to be_any { |x| x.include?('status') }
       end
     end
 
