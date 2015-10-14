@@ -83,10 +83,6 @@ module Cinch; module Plugins; class Codenames < GameBot
     # I don't think we need to do anything.
   end
 
-  def bg3po_invite_command(channel_name)
-    # Nah, I don't want to do bg3po
-  end
-
   #--------------------------------------------------------------------------------
   # Game
   #--------------------------------------------------------------------------------
