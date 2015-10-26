@@ -66,12 +66,7 @@ RSpec.describe Cinch::Plugins::Codenames do
     :words => (1..25).map { |i| "word#{i}" }
   }}
   let(:bot) {
-    b = make_bot(described_class, opts) { |c|
-      self.loggers.first.level = :warn
-    }
-    # No, c.nick = 'testbot' doesn't work because... isupport?
-    allow(b).to receive(:nick).and_return('testbot')
-    b
+    make_bot(described_class, opts) { |c| c.loggers.first.level = :warn }
   }
   let(:plugin) { bot.plugins.first }
 
