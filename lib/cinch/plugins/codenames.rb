@@ -8,7 +8,6 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   match(/teams?(?:\s+(a|b|r|x))?/i, method: :team)
   match(/words(?:\s+(##?\w+))?/i, method: :words)
-  match(/status/i, method: :status)
 
   match(/me$/i, method: :become_hinter)
   match(/rand(?:om)?$/i, method: :random_hinter)
@@ -82,6 +81,8 @@ module Cinch; module Plugins; class Codenames < GameBot
   def do_replace_user(game, replaced_user, replacing_user)
     # I don't think we need to do anything.
   end
+
+  #game_status aliased to decision_info later
 
   #--------------------------------------------------------------------------------
   # Game
@@ -253,22 +254,6 @@ module Cinch; module Plugins; class Codenames < GameBot
     end
   end
 
-  def status(m)
-    game = self.game_of(m)
-    return unless game
-
-    unless game.started?
-      if game.size == 0
-        m.reply('No game in progress. Join and start one!')
-      else
-        m.reply("A game is forming. #{game.size} players have joined: #{game.users.map(&:name).join(', ')}")
-      end
-      return
-    end
-
-    m.reply(decision_info(game))
-  end
-
   def peek(m, channel_name = nil)
     return unless self.is_mod?(m.user)
     game = self.game_of(m, channel_name, ['peek', '!peek'])
@@ -335,6 +320,7 @@ module Cinch; module Plugins; class Codenames < GameBot
     end
     "Game #{game.id} turn #{game.turn_number}: #{info}"
   end
+  alias :game_status :decision_info
 
   def classify_one(name, words, max, show_max: true)
     max_str = show_max ? "/#{max}" : ''
