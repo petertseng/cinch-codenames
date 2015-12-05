@@ -28,7 +28,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   match(/peek(?:\s+(##?\w+))?/i, method: :peek)
 
-  common_commands
+  add_common_commands
 
   TEAMS = [
     [:bold, :blue, 'Team Blue'],
