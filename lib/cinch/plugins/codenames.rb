@@ -259,7 +259,7 @@ module Cinch; module Plugins; class Codenames < GameBot
     game = self.game_of(m, channel_name, ['peek', '!peek'])
     return unless game && game.started?
 
-    if game.has_player?(m.user)
+    if game.users.include?(m.user)
       m.user.send('Cheater!!!')
       return
     end
