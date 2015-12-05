@@ -74,7 +74,7 @@ module Cinch; module Plugins; class Codenames < GameBot
   end
 
   def do_reset_game(game)
-    return unless game.started? && game.teams.all?(&:picked_roles?)
+    return unless game.teams.all?(&:picked_roles?)
     Channel(game.channel_name).send(self.endgame_word_info(game))
   end
 
