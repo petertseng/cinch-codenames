@@ -8,6 +8,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   match(/teams?(?:\s+(a|b|r|x))?/i, method: :team)
   match(/words(?:\s+(##?\w+))?/i, method: :words)
+  match(/history(?:\s+(##?\w+))?/i, method: :history)
 
   match(/me$/i, method: :become_hinter)
   match(/rand(?:om)?$/i, method: :random_hinter)
@@ -249,6 +250,38 @@ module Cinch; module Plugins; class Codenames < GameBot
     else
       m.reply(self.public_word_info(game))
     end
+  end
+
+  def history(m, channel_name = nil)
+    game = self.game_of(m, channel_name, ['see history', '!history'])
+    return unless game && game.started?
+
+    if game.hints.empty?
+      m.reply("Game #{game.id} history: Nothing yet!")
+      return
+    end
+
+    m.reply("Game #{game.id} history:\n" + game.hints.map { |entry|
+      prefix = "#{format_team(entry.team)} Hint: #{entry.to_s}. Guesses: "
+      next "#{prefix}None yet." if entry.guesses.empty?
+
+      # The first N-1 guesses must be the right team (so that the team could continue guessing),
+      # so we just need to check the role of the last word.
+      last_role = entry.guesses.last.role
+      team_results = entry.guesses.size - 1
+      team_results += 1 if last_role == entry.team
+
+      guess_roles = []
+      guess_roles << "#{team_results} #{format_team(entry.team)}" if team_results > 0
+      guess_roles << "1 #{NEUTRAL}" if last_role == :neutral
+      # Assassin probably not possible, but maybe one day we'll have retroactive history.
+      guess_roles << "1 #{ASSASSIN}" if last_role == :assassin
+      guess_roles << "1 #{format_team(last_role)}" if last_role.is_a?(Integer) && last_role != entry.team
+
+      guesses = entry.guesses.map { |g| g.word.capitalize }.join(', ')
+
+      "#{prefix}#{guesses} (#{guess_roles.join(', ')})."
+    }.join("\n"))
   end
 
   def peek(m, channel_name = nil)

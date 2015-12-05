@@ -355,6 +355,30 @@ RSpec.describe Cinch::Plugins::Codenames do
       end
     end
 
+    describe 'history' do
+      before(:each) do
+        get_replies(msg('!me', nick: hinters[0]))
+        get_replies(msg('!me', nick: hinters[1]))
+        get_replies(msg('!clue hi 2', nick: hinters[0]))
+      end
+
+      # This is pretty bad.
+      let(:words) { get_replies_text(msg('!words', nick: hinters[0])).find { |x| x.include?('Assassin') } }
+      let(:team0_word) { %r{\(9\): (\w+)}.match(words)[1] }
+      let(:team0_word2) { %r{\(9\): \w+, (\w+)}.match(words)[1] }
+      let(:team1_word) { %r{\(8\): (\w+)}.match(words)[1] }
+
+      it 'has history' do
+        get_replies(msg("!guess #{team0_word}", nick: guessers[0]))
+        get_replies(msg("!guess #{team0_word2}", nick: guessers[0]))
+        get_replies(msg("!guess #{team1_word}", nick: guessers[0]))
+        history = get_replies_text(msg('!history'))
+        expect(history).to_not be_empty
+        # Kinda a crappy regex because of the color-coding, but maybe good enough
+        expect(history).to be_all { |x| x =~ /Blue.*Hint.*hi 2.*Guess.*Word.*2.*Team Blue.*1.*Team Red/ }
+      end
+    end
+
     describe 'reset' do
       it 'lets a mod reset' do
         chan.messages.clear
