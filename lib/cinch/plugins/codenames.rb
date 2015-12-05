@@ -52,8 +52,9 @@ module Cinch; module Plugins; class Codenames < GameBot
     ::Codenames::Game
   end
 
-  def do_start_game(m, game, options)
-    success, error = game.start_game
+  def do_start_game(m, game, players, options)
+    players_and_preferences = players.map { |p| [p.user, p.data[:team_preference]] }.to_h
+    success, error = game.start_game(players_and_preferences)
     unless success
       m.reply("Failed to start game because #{error}", true)
       return
@@ -217,16 +218,12 @@ module Cinch; module Plugins; class Codenames < GameBot
       when 'b'; team = 1
       else; team = nil
       end
-      success, error = game.prefer_team(m.user, team)
-      if success
-        team_name = team ? 'AB'[team] : 'Random'
-        m.reply("You joined team #{team_name}.", true)
-      else
-        m.reply("Failed to change team because #{error}", true)
-      end
+      @waiting_rooms[game.channel_name].data[m.user][:team_preference] = team
+      team_name = team ? 'AB'[team] : 'Random'
+      m.reply("You joined team #{team_name}.", true)
     else
       # Not started and no arg: show teams.
-      prefs = game.team_preferences
+      prefs = @waiting_rooms[game.channel_name].players.group_by { |p| p.data[:team_preference] }
       return if prefs.empty?
       team_ids = (0...::Codenames::Game::NUM_TEAMS).to_a
       team_ids << nil
@@ -234,7 +231,7 @@ module Cinch; module Plugins; class Codenames < GameBot
       teams = team_ids.map { |i|
         next nil unless prefs[i] && !prefs[i].empty?
         team_name = i ? 'AB'[i] : 'Random'
-        "Team #{team_name} (#{prefs[i].size}): #{prefs[i].map { |u| dehighlight_nick(u.nick) }.join(', ')}"
+        "Team #{team_name} (#{prefs[i].size}): #{prefs[i].map { |p| dehighlight_nick(p.user.nick) }.join(', ')}"
       }.compact.join(', ')
       m.reply(teams)
     end
