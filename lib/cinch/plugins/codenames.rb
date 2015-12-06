@@ -49,9 +49,9 @@ module Cinch; module Plugins; class Codenames < GameBot
   # Implementing classes should override these
   #--------------------------------------------------------------------------------
 
-  def game_class
-    ::Codenames::Game
-  end
+  def min_players; ::Codenames::Game::MIN_PLAYERS end
+  def max_players; ::Codenames::Game::MAX_PLAYERS end
+  def game_name; ::Codenames::Game::GAME_NAME end
 
   def do_start_game(m, channel_name, players, settings, start_args)
     players_and_preferences = players.map { |p| [p.user, p.data[:team_preference]] }.to_h
