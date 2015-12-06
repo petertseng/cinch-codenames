@@ -451,6 +451,22 @@ RSpec.describe Cinch::Plugins::Codenames do
     end
   end
 
+  context 'in an unbalanced game' do
+    before :each do
+      [player1, player2, player3].each { |player|
+        join(msg('!join', nick: player))
+        get_replies(msg('!team a', nick: player))
+      }
+      allow(plugin).to receive(:Channel).with(channel1).and_return(chan)
+    end
+
+    it 'refuses to start' do
+      replies = get_replies_text(msg('!start'))
+      expect(replies).to be_all { |x| x =~ /Failed to start game because both teams need at least one/ }
+      expect(replies.drop(1)).to be_empty
+    end
+  end
+
   describe 'status' do
     it 'responds with no players' do
       replies = get_replies_text(msg('!status', channel: channel1))
