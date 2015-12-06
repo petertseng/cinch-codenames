@@ -53,11 +53,12 @@ module Cinch; module Plugins; class Codenames < GameBot
     ::Codenames::Game
   end
 
-  def do_start_game(m, game, players, options)
+  def do_start_game(m, channel_name, players, settings, start_args)
     players_and_preferences = players.map { |p| [p.user, p.data[:team_preference]] }.to_h
-    success, error = game.start_game(players_and_preferences)
-    unless success
-      m.reply("Failed to start game because #{error}", true)
+    begin
+      game = ::Codenames::Game.new(channel_name, players_and_preferences)
+    rescue => e
+      m.reply("Failed to start game because #{e}", true)
       return
     end
 
@@ -73,6 +74,8 @@ module Cinch; module Plugins; class Codenames < GameBot
     else
       self.send_initial_info(game)
     end
+
+    game
   end
 
   def do_reset_game(game)
@@ -100,7 +103,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def choose_hinter(m, random: false)
     game = self.game_of(m)
-    return unless game && game.started?
+    return unless game
 
     role_name = ::Codenames::Text::ROLES[:hint]
 
@@ -125,7 +128,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def hint(m, word, num)
     game = self.game_of(m)
-    return unless game && game.started?
+    return unless game
 
     success, error = game.hint(m.user, word, num)
     if success
@@ -139,7 +142,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def guess(m, guessed)
     game = self.game_of(m)
-    return unless game && game.started?
+    return unless game
 
     # Save these because they could change after guess is done.
     team_name = format_team(game.current_team_id)
@@ -196,10 +199,8 @@ module Cinch; module Plugins; class Codenames < GameBot
   end
 
   def team(m, arg = nil)
-    game = self.game_of(m)
-    return unless game
-
-    if game.started?
+    # Game started: show teams.
+    if (game = self.game_of(m))
       game.teams.each { |team|
         if team.picked_roles?
           msg = [:hint, :guess].map { |role|
@@ -212,19 +213,24 @@ module Cinch; module Plugins; class Codenames < GameBot
         end
         m.reply(msg)
       }
-    elsif arg
+      return
+    end
+
+    waiting_room = self.waiting_room_of(m)
+
+    if arg
       # Not started and arg given: change team preference.
       case arg.downcase
       when 'a'; team = 0
       when 'b'; team = 1
       else; team = nil
       end
-      @waiting_rooms[game.channel_name].data[m.user][:team_preference] = team
+      waiting_room.data[m.user][:team_preference] = team
       team_name = team ? 'AB'[team] : 'Random'
       m.reply("You joined team #{team_name}.", true)
     else
       # Not started and no arg: show teams.
-      prefs = @waiting_rooms[game.channel_name].players.group_by { |p| p.data[:team_preference] }
+      prefs = waiting_room.players.group_by { |p| p.data[:team_preference] }
       return if prefs.empty?
       team_ids = (0...::Codenames::Game::NUM_TEAMS).to_a
       team_ids << nil
@@ -240,7 +246,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def words(m, channel_name = nil)
     game = self.game_of(m, channel_name, ['see words', '!words'])
-    return unless game && game.started?
+    return unless game
 
     # We don't show words until everyone has chosen roles.
     return unless game.teams.all?(&:picked_roles?)
@@ -254,7 +260,7 @@ module Cinch; module Plugins; class Codenames < GameBot
 
   def history(m, channel_name = nil)
     game = self.game_of(m, channel_name, ['see history', '!history'])
-    return unless game && game.started?
+    return unless game
 
     if game.hints.empty?
       m.reply("Game #{game.id} history: Nothing yet!")
@@ -287,7 +293,7 @@ module Cinch; module Plugins; class Codenames < GameBot
   def peek(m, channel_name = nil)
     return unless self.is_mod?(m.user)
     game = self.game_of(m, channel_name, ['peek', '!peek'])
-    return unless game && game.started?
+    return unless game
 
     if game.users.include?(m.user)
       m.user.send('Cheater!!!')
