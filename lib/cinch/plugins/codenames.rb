@@ -417,7 +417,7 @@ module Cinch; module Plugins; class Codenames < GameBot
       m.reply('Game admin: kick, reset, replace')
     when '2'
       m.reply("Set team (pre-game): team")
-      m.reply("Game info: team, words, status")
+      m.reply("Game info: team, words, status, history")
       m.reply("Game actions: guess (alias g), clue (alias c, hint, h), stop (alias s, pass, p, noguess)")
     when '3'
       m.reply('Getting people to play: invite, subscribe, unsubscribe')
